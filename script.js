@@ -14,18 +14,16 @@ let animationFrame;
 
 // Constants
 const EMOJI_TYPES = ["🪨", "📄", "✂️"];
-const MAX_SPEED = 1.2;
-const MIN_SPEED = 0.8;
-const EMOJI_SIZE = 15; // Size of emoji
-const SPAWN_PADDING = EMOJI_SIZE * 3;
-const MAX_EMOJIS = 50; // Cap to prevent lag
+const MAX_EMOJIS = 50;
+const MIN_SPEED = 0.5; // Slower for better visibility
+const MAX_SPEED = 2;
+const SPAWN_PADDING = 10;
 
-// Spawn Regions
-const spawnRegions = [
-    { x: SPAWN_PADDING, y: SPAWN_PADDING }, // Top-left
-    { x: arena.offsetWidth - SPAWN_PADDING * 8, y: SPAWN_PADDING }, // Top-right
-    { x: SPAWN_PADDING, y: arena.offsetHeight - SPAWN_PADDING * 8 }, // Bottom-left
-];
+// Arena Bounds
+const ARENA_BOUNDS = {
+    width: arena.offsetWidth,
+    height: arena.offsetHeight
+};
 
 // Utility Functions
 function random(min, max) {
@@ -36,7 +34,7 @@ function checkCollision(a, b) {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < a.size + b.size;
+    return distance < a.size;
 }
 
 function resolveCollision(emojiA, emojiB) {
@@ -47,6 +45,7 @@ function resolveCollision(emojiA, emojiB) {
     } else if (emojiA.type === "📄" && emojiB.type === "🪨") {
         emojiB.type = "📄";
     }
+    emojiB.element.textContent = emojiB.type;
 }
 
 // Emoji Class
@@ -96,17 +95,16 @@ class Emoji {
         this.y += this.speedY;
 
         // Bounce off walls
-        if (this.x <= SPAWN_PADDING || this.x >= arena.offsetWidth - this.size - SPAWN_PADDING) {
+        if (this.x <= SPAWN_PADDING || this.x >= ARENA_BOUNDS.width - this.size - SPAWN_PADDING) {
             this.speedX *= -1;
         }
-        if (this.y <= SPAWN_PADDING || this.y >= arena.offsetHeight - this.size - SPAWN_PADDING) {
+        if (this.y <= SPAWN_PADDING || this.y >= ARENA_BOUNDS.height - this.size - SPAWN_PADDING) {
             this.speedY *= -1;
         }
 
         this.updatePosition();
     }
 }
-
 
 // Game Functions
 function startGame() {
@@ -122,30 +120,25 @@ function backToMenu() {
 
 function spawnEmojis() {
     resetGame();
-    const count = Math.min(parseInt(emojiCountInput.value), MAX_EMOJIS); // Limit count for performance
-    const perTypeCount = Math.floor(count / 3); // Equal split among types
 
-    EMOJI_TYPES.forEach((type, index) => {
-        const region = spawnRegions[index];
-        for (let i = 0; i < perTypeCount; i++) {
-            let x, y;
-            let validPosition = false;
+    const count = Math.min(MAX_EMOJIS, parseInt(emojiCountInput.value));
+    const spawnRegions = [
+        { xMin: 0, yMin: 0, xMax: ARENA_BOUNDS.width / 3, yMax: ARENA_BOUNDS.height / 3 },
+        { xMin: ARENA_BOUNDS.width / 3 * 2, yMin: 0, xMax: ARENA_BOUNDS.width, yMax: ARENA_BOUNDS.height / 3 },
+        { xMin: 0, yMin: ARENA_BOUNDS.height / 3 * 2, xMax: ARENA_BOUNDS.width / 3, yMax: ARENA_BOUNDS.height }
+    ];
 
-            while (!validPosition) {
-                x = random(region.x, region.x + SPAWN_PADDING * 5);
-                y = random(region.y, region.y + SPAWN_PADDING * 5);
+    const size = 15;
 
-                // Avoid overlapping with existing emojis
-                validPosition = emojis.every(e => {
-                    const dx = e.x - x;
-                    const dy = e.y - y;
-                    return Math.sqrt(dx * dx + dy * dy) > EMOJI_SIZE * 2;
-                });
-            }
-
+    EMOJI_TYPES.forEach((type, regionIndex) => {
+        for (let i = 0; i < Math.floor(count / EMOJI_TYPES.length); i++) {
+            const region = spawnRegions[regionIndex];
+            const x = random(region.xMin + SPAWN_PADDING, region.xMax - size - SPAWN_PADDING);
+            const y = random(region.yMin + SPAWN_PADDING, region.yMax - size - SPAWN_PADDING);
             const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
             const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
-            emojis.push(new Emoji(type, x, y, EMOJI_SIZE, speedX, speedY));
+
+            emojis.push(new Emoji(type, x, y, size, speedX, speedY));
         }
     });
 
@@ -154,7 +147,10 @@ function spawnEmojis() {
 
 function resetGame() {
     cancelAnimationFrame(animationFrame);
-    emojis.forEach(emoji => emoji.element.remove());
+    emojis.forEach(emoji => {
+        emoji.element.remove();
+        emoji.hitbox.remove();
+    });
     emojis = [];
     winnerAnnouncement.classList.add("hidden");
 }
@@ -174,7 +170,6 @@ function animate() {
         emojis.forEach(other => {
             if (emoji !== other && checkCollision(emoji, other)) {
                 resolveCollision(emoji, other);
-                other.element.textContent = other.type;
             }
         });
     });
