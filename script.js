@@ -1,3 +1,6 @@
+// JavaScript (script.js)
+const titleScreen = document.getElementById('title-screen');
+const controls = document.getElementById('controls');
 const canvas = document.getElementById('arena');
 const ctx = canvas.getContext('2d');
 const emojiTypes = ['🪨', '📄', '✂️'];
@@ -8,9 +11,9 @@ function resizeCanvas() {
   canvas.height = window.innerHeight;
 }
 
-// Spawn emojis
-function spawnInitialEntities() {
-  for (let i = 0; i < 3; i++) {
+function spawnInitialEntities(count = 3) {
+  entities.length = 0; // Clear entities
+  for (let i = 0; i < count; i++) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
     const type = emojiTypes[i % emojiTypes.length];
@@ -19,32 +22,30 @@ function spawnInitialEntities() {
 }
 
 function drawEntities() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   entities.forEach(entity => {
     ctx.font = '40px Arial';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
     ctx.fillText(entity.type, entity.x, entity.y);
   });
 }
 
-function updateArena() {
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+function startGame() {
+  titleScreen.style.display = 'none';
+  canvas.style.display = 'block';
+  controls.style.display = 'flex';
 
+  resizeCanvas();
+  spawnInitialEntities();
+  requestAnimationFrame(updateArena);
+}
+
+function updateArena() {
   drawEntities();
   requestAnimationFrame(updateArena);
 }
 
-function startGame() {
-  document.getElementById('title-screen').style.display = 'none';
-  canvas.style.display = 'block';
-  document.getElementById('controls').style.display = 'flex';
-
-  resizeCanvas();
-  spawnInitialEntities();
-  updateArena();
-}
-
 document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('respawn-all').addEventListener('click', () => spawnInitialEntities(5));
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
