@@ -1,3 +1,4 @@
+<!-- HTML (index.html) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,11 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Emoji Battle Arena</title>
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="style.css" rel="stylesheet">
 </head>
 <body>
+  <!-- Title Screen -->
   <div id="title-screen">
-    <div class="background"></div>
+    <canvas id="menu-background"></canvas>
     <div class="content">
       <h1>Emoji Battle Arena</h1>
       <p>Welcome to the chillest battle arena. Choose your settings to begin!</p>
@@ -17,10 +19,12 @@
     </div>
   </div>
 
+  <!-- Game Arena -->
   <canvas id="arena" style="display: none;"></canvas>
 
+  <!-- Controls -->
   <div id="controls" style="display: none;">
-    <div class="background"></div>
+    <canvas id="control-background"></canvas>
     <div class="content">
       <h3>Customizations</h3>
       <div class="control-group">
@@ -41,6 +45,7 @@
         <input type="number" id="emoji-count" min="1" max="20" value="3">
       </div>
       <button id="spawn-random">Spawn Random Emoji</button>
+      <button id="respawn-all">Respawn All Emojis</button>
     </div>
   </div>
 
