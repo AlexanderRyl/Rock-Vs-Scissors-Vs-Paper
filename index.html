@@ -1,44 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emoji Battle Arena</title>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-  <link href="style.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors Arena</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Neon Menu -->
-  <div id="menu">
-    <canvas id="menu-bg"></canvas>
-    <div class="menu-content">
-      <h1>Emoji Battle Arena</h1>
-      <p>The chillest battle arena with a neon twist!</p>
-      <button id="start-btn">Start Game</button>
+    <!-- Main Menu -->
+    <div id="main-menu" class="menu">
+        <h1>Rock Paper Scissors Arena</h1>
+        <button id="start-button" class="btn">Start Game</button>
     </div>
-  </div>
 
-  <!-- Game Arena -->
-  <canvas id="arena" style="display: none;"></canvas>
-
-  <!-- Game Controls -->
-  <div id="controls" style="display: none;">
-    <canvas id="control-bg"></canvas>
-    <div class="controls-content">
-      <h3>Game Settings</h3>
-      <div class="control-group">
-        <label for="emoji-count">Number of Emojis:</label>
-        <input type="number" id="emoji-count" min="1" max="20" value="5">
-      </div>
-      <div class="control-group">
-        <label for="emoji-speed">Emoji Speed:</label>
-        <input type="range" id="emoji-speed" min="1" max="10" value="5">
-      </div>
-      <button id="spawn-btn">Spawn Random Emoji</button>
-      <button id="respawn-btn">Respawn All Emojis</button>
+    <!-- Game Screen -->
+    <div id="game-screen" class="hidden">
+        <div class="controls">
+            <input id="emoji-count" type="number" min="1" max="50" placeholder="Emoji count (1-50)">
+            <button id="spawn-button" class="btn">Spawn Emojis</button>
+            <button id="back-button" class="btn back-btn">Back to Menu</button>
+        </div>
+        <div id="arena" class="arena"></div>
+        <div id="winner-announcement" class="announcement hidden"></div>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
