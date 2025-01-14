@@ -94,15 +94,39 @@ function backToMenu() {
 function spawnEmojis() {
     resetGame();
     const count = Math.min(MAX_EMOJIS, parseInt(emojiCountInput.value));
+    const cornerRegions = [
+        { x: 0, y: 0 }, // Top-left corner
+        { x: ARENA_BOUNDS.width * 0.75, y: 0 }, // Top-right corner
+        { x: 0, y: ARENA_BOUNDS.height * 0.75 }, // Bottom-left corner
+        { x: ARENA_BOUNDS.width * 0.75, y: ARENA_BOUNDS.height * 0.75 } // Bottom-right corner
+    ];
+    const radius = 50; // Minimum radius of separation
+
     for (let i = 0; i < count * 3; i++) {
         const type = EMOJI_TYPES[i % 3];
-        const x = random(0, ARENA_BOUNDS.width - 30);
-        const y = random(0, ARENA_BOUNDS.height - 30);
+        let validPosition = false;
+        let x, y;
+
+        // Try to spawn emoji in a valid position
+        while (!validPosition) {
+            const corner = cornerRegions[Math.floor(Math.random() * cornerRegions.length)];
+            x = random(corner.x, corner.x + radius);
+            y = random(corner.y, corner.y + radius);
+
+            // Check if the position is far enough from all existing emojis
+            validPosition = emojis.every(e => {
+                const dx = e.x - x;
+                const dy = e.y - y;
+                return Math.sqrt(dx * dx + dy * dy) > radius;
+            });
+        }
+
         const size = 15;
         const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
         const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
         emojis.push(new Emoji(type, x, y, size, speedX, speedY));
     }
+
     animate();
 }
 
