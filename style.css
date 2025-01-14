@@ -1,16 +1,96 @@
-/* Body Styling */
+/* style.css - Enhanced Styling */
+
 body {
   margin: 0;
+  font-family: Arial, sans-serif;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
-  background: radial-gradient(circle, #050505, #000000, #1a1a1a);
+  background: radial-gradient(circle at center, #050505, #000, #1a1a1a);
   overflow: hidden;
 }
 
-/* Arena Canvas Styling */
+#title-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh;
+  color: white;
+  background: linear-gradient(135deg, #1e1e1e, #121212);
+}
+
+#title-screen h1 {
+  font-size: 3rem;
+  color: #00ffcc;
+  text-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+}
+
+#title-screen p {
+  font-size: 1.2rem;
+  color: #cccccc;
+  margin-bottom: 20px;
+}
+
+#title-screen button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  background: #00ffcc;
+  border: none;
+  border-radius: 5px;
+  color: black;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ffcc;
+  transition: transform 0.2s;
+}
+
+#title-screen button:hover {
+  transform: scale(1.1);
+}
+
 #arena {
-  border: 5px solid white;
+  border: 5px solid #ffffff;
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  display: block;
+}
+
+#controls {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 10px;
+  background: #222;
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+#controls h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+#controls label {
+  margin-right: 10px;
+}
+
+#controls select, #controls input, #controls button {
+  margin-left: 5px;
+  margin-right: 10px;
+  padding: 5px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
+
+#controls button {
+  background: #00cc99;
+  box-shadow: 0 0 10px #00cc99;
+}
+
+#controls button:hover {
+  transform: scale(1.05);
 }
