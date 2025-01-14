@@ -1,96 +1,122 @@
-/* style.css - Enhanced Styling */
+// script.js - Core Game Logic
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: radial-gradient(circle at center, #050505, #000, #1a1a1a);
-  overflow: hidden;
+const canvas = document.getElementById('arena');
+const ctx = canvas.getContext('2d');
+resizeCanvas();
+
+window.addEventListener('resize', resizeCanvas);
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight * 0.9; // Leave space for controls
 }
 
-#title-screen {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  height: 100vh;
-  color: white;
-  background: linear-gradient(135deg, #1e1e1e, #121212);
+// Define emoji properties
+const emojis = {
+  '🪨': { beats: '✂️', color: 'gray', glow: '#808080' },
+  '📄': { beats: '🪨', color: 'blue', glow: '#0099ff' },
+  '✂️': { beats: '📄', color: 'red', glow: '#ff0033' },
+};
+
+// Create abstract animated background
+let gradientShift = 0;
+function drawBackground() {
+  gradientShift += 1;
+  const gradient = ctx.createLinearGradient(0, gradientShift, canvas.width, canvas.height + gradientShift);
+  gradient.addColorStop(0, '#003333');
+  gradient.addColorStop(0.25, '#330033');
+  gradient.addColorStop(0.5, '#330000');
+  gradient.addColorStop(0.75, '#000033');
+  gradient.addColorStop(1, '#003333');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Add abstract shapes
+  for (let i = 0; i < 10; i++) {
+    ctx.strokeStyle = `rgba(0, 255, 255, 0.1)`;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.arc(
+      Math.random() * canvas.width,
+      Math.random() * canvas.height,
+      Math.random() * 100,
+      0,
+      Math.PI * 2
+    );
+    ctx.stroke();
+  }
 }
 
-#title-screen h1 {
-  font-size: 3rem;
-  color: #00ffcc;
-  text-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+// Define Entity class
+class Entity {
+  constructor(x, y, type, size = Math.random() * 40 + 20) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.type = type;
+    this.dx = (Math.random() - 0.5) * 6;
+    this.dy = (Math.random() - 0.5) * 6;
+  }
+
+  draw() {
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = emojis[this.type].glow;
+    ctx.fillStyle = emojis[this.type].color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.font = `${this.size / 2}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
+    ctx.fillText(this.type, this.x, this.y);
+  }
+
+  move() {
+    this.x += this.dx;
+    this.y += this.dy;
+    if (this.x - this.size / 2 <= 0 || this.x + this.size / 2 >= canvas.width) this.dx *= -1;
+    if (this.y - this.size / 2 <= 0 || this.y + this.size / 2 >= canvas.height) this.dy *= -1;
+  }
+
+  collideWith(other) {
+    const distance = Math.hypot(this.x - other.x, this.y - other.y);
+    return distance < (this.size + other.size) / 2;
+  }
+
+  interact(other) {
+    if (emojis[this.type].beats === other.type) other.type = this.type;
+  }
 }
 
-#title-screen p {
-  font-size: 1.2rem;
-  color: #cccccc;
-  margin-bottom: 20px;
+// Initialize entities
+const entities = [
+  new Entity(100, 100, '🪨'),
+  new Entity(400, 400, '📄'),
+  new Entity(700, 700, '✂️'),
+];
+
+// Add event listener for random-size emoji spawning
+canvas.addEventListener('click', (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const randomEmoji = Object.keys(emojis)[Math.floor(Math.random() * 3)];
+  entities.push(new Entity(x, y, randomEmoji));
+});
+
+// Update game state
+function update() {
+  drawBackground();
+  entities.forEach((entity, i) => {
+    entity.move();
+    entity.draw();
+    entities.slice(i + 1).forEach(other => {
+      if (entity.collideWith(other)) entity.interact(other);
+    });
+  });
+  requestAnimationFrame(update);
 }
 
-#title-screen button {
-  padding: 10px 20px;
-  font-size: 1rem;
-  background: #00ffcc;
-  border: none;
-  border-radius: 5px;
-  color: black;
-  cursor: pointer;
-  box-shadow: 0 0 10px #00ffcc;
-  transition: transform 0.2s;
-}
-
-#title-screen button:hover {
-  transform: scale(1.1);
-}
-
-#arena {
-  border: 5px solid #ffffff;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-  display: block;
-}
-
-#controls {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  padding: 10px;
-  background: #222;
-  color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-}
-
-#controls h3 {
-  margin: 0;
-  font-size: 1.2rem;
-  text-align: center;
-}
-
-#controls label {
-  margin-right: 10px;
-}
-
-#controls select, #controls input, #controls button {
-  margin-left: 5px;
-  margin-right: 10px;
-  padding: 5px;
-  border: 1px solid #555;
-  border-radius: 3px;
-  background: #333;
-  color: white;
-  cursor: pointer;
-}
-
-#controls button {
-  background: #00cc99;
-  box-shadow: 0 0 10px #00cc99;
-}
-
-#controls button:hover {
-  transform: scale(1.05);
-}
+update();
