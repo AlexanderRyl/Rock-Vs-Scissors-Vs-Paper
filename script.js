@@ -58,21 +58,37 @@ class Emoji {
         this.size = size;
         this.speedX = speedX;
         this.speedY = speedY;
+
+        // Create visible emoji
         this.element = document.createElement("div");
         this.element.className = "emoji";
         this.element.textContent = this.type;
 
-        // Make hitbox invisible
-        this.element.style.visibility = "hidden";
-        this.updatePosition();
+        // Style for visible emoji
+        this.element.style.fontSize = `${this.size}px`;
+        this.element.style.position = "absolute";
+
+        // Invisible hitbox
+        this.hitbox = document.createElement("div");
+        this.hitbox.className = "hitbox";
+        this.hitbox.style.position = "absolute";
+        this.hitbox.style.width = `${this.size}px`;
+        this.hitbox.style.height = `${this.size}px`;
+        this.hitbox.style.visibility = "hidden"; // Invisible hitbox
+
+        arena.appendChild(this.hitbox);
         arena.appendChild(this.element);
+        this.updatePosition();
     }
 
     updatePosition() {
+        // Position emoji
         this.element.style.left = `${this.x}px`;
         this.element.style.top = `${this.y}px`;
-        this.element.style.width = `${this.size}px`;
-        this.element.style.height = `${this.size}px`;
+
+        // Position hitbox (aligned with emoji)
+        this.hitbox.style.left = `${this.x}px`;
+        this.hitbox.style.top = `${this.y}px`;
     }
 
     move() {
@@ -90,6 +106,7 @@ class Emoji {
         this.updatePosition();
     }
 }
+
 
 // Game Functions
 function startGame() {
