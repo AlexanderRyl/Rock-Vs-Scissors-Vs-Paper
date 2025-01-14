@@ -15,7 +15,7 @@
 
   <canvas id="arena" style="display: none;"></canvas>
 
-  <div id="controls">
+  <div id="controls" style="display: none;">
     <h3>Customizations</h3>
     <label for="map-shape">Map Shape:</label>
     <select id="map-shape">
@@ -33,6 +33,19 @@
 
     <button id="spawn-random">Spawn Random-Size Emoji</button>
   </div>
+
+  <script>
+    const titleScreen = document.getElementById('title-screen');
+    const startButton = document.getElementById('start-btn');
+    const canvas = document.getElementById('arena');
+    const controls = document.getElementById('controls');
+
+    startButton.addEventListener('click', () => {
+      titleScreen.style.display = 'none';
+      canvas.style.display = 'block';
+      controls.style.display = 'flex';
+    });
+  </script>
 
   <script src="script.js"></script>
 </body>
