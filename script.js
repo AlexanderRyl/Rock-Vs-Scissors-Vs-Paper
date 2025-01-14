@@ -14,12 +14,18 @@ let animationFrame;
 
 // Constants
 const EMOJI_TYPES = ["🪨", "📄", "✂️"];
-const MAX_SPEED = 1; // Adjusted for smoother performance
-const MIN_SPEED = 0.5; // Observable movement speed
-const EMOJI_SIZE = 15; // Size of emojis
-const SPAWN_REGION_SIZE = 120; // Square size for grouped spawns
-const ARENA_PADDING = EMOJI_SIZE * 3; // Avoids wall collisions
-const MAX_EMOJIS = 50; // Performance cap
+const MAX_SPEED = 1.2;
+const MIN_SPEED = 0.8;
+const EMOJI_SIZE = 15; // Size of emoji
+const SPAWN_PADDING = EMOJI_SIZE * 3;
+const MAX_EMOJIS = 50; // Cap to prevent lag
+
+// Spawn Regions
+const spawnRegions = [
+    { x: SPAWN_PADDING, y: SPAWN_PADDING }, // Top-left
+    { x: arena.offsetWidth - SPAWN_PADDING * 8, y: SPAWN_PADDING }, // Top-right
+    { x: SPAWN_PADDING, y: arena.offsetHeight - SPAWN_PADDING * 8 }, // Bottom-left
+];
 
 // Utility Functions
 function random(min, max) {
@@ -55,6 +61,9 @@ class Emoji {
         this.element = document.createElement("div");
         this.element.className = "emoji";
         this.element.textContent = this.type;
+
+        // Make hitbox invisible
+        this.element.style.visibility = "hidden";
         this.updatePosition();
         arena.appendChild(this.element);
     }
@@ -62,7 +71,8 @@ class Emoji {
     updatePosition() {
         this.element.style.left = `${this.x}px`;
         this.element.style.top = `${this.y}px`;
-        this.element.style.fontSize = `${this.size * 2}px`;
+        this.element.style.width = `${this.size}px`;
+        this.element.style.height = `${this.size}px`;
     }
 
     move() {
@@ -70,10 +80,10 @@ class Emoji {
         this.y += this.speedY;
 
         // Bounce off walls
-        if (this.x <= ARENA_PADDING || this.x >= arena.offsetWidth - this.size * 2 - ARENA_PADDING) {
+        if (this.x <= SPAWN_PADDING || this.x >= arena.offsetWidth - this.size - SPAWN_PADDING) {
             this.speedX *= -1;
         }
-        if (this.y <= ARENA_PADDING || this.y >= arena.offsetHeight - this.size * 2 - ARENA_PADDING) {
+        if (this.y <= SPAWN_PADDING || this.y >= arena.offsetHeight - this.size - SPAWN_PADDING) {
             this.speedY *= -1;
         }
 
@@ -95,24 +105,20 @@ function backToMenu() {
 
 function spawnEmojis() {
     resetGame();
-    const count = Math.min(parseInt(emojiCountInput.value), MAX_EMOJIS); // Limit for performance
-    const perCornerCount = Math.ceil(count / 3); // Split evenly among types
-    const cornerRegions = [
-        { type: "🪨", x: ARENA_PADDING, y: ARENA_PADDING }, // Top-left
-        { type: "📄", x: arena.offsetWidth - SPAWN_REGION_SIZE - ARENA_PADDING, y: ARENA_PADDING }, // Top-right
-        { type: "✂️", x: ARENA_PADDING, y: arena.offsetHeight - SPAWN_REGION_SIZE - ARENA_PADDING } // Bottom-left
-    ];
+    const count = Math.min(parseInt(emojiCountInput.value), MAX_EMOJIS); // Limit count for performance
+    const perTypeCount = Math.floor(count / 3); // Equal split among types
 
-    cornerRegions.forEach(corner => {
-        for (let i = 0; i < perCornerCount; i++) {
+    EMOJI_TYPES.forEach((type, index) => {
+        const region = spawnRegions[index];
+        for (let i = 0; i < perTypeCount; i++) {
             let x, y;
             let validPosition = false;
 
             while (!validPosition) {
-                x = random(corner.x, corner.x + SPAWN_REGION_SIZE - EMOJI_SIZE);
-                y = random(corner.y, corner.y + SPAWN_REGION_SIZE - EMOJI_SIZE);
+                x = random(region.x, region.x + SPAWN_PADDING * 5);
+                y = random(region.y, region.y + SPAWN_PADDING * 5);
 
-                // Ensure no overlap
+                // Avoid overlapping with existing emojis
                 validPosition = emojis.every(e => {
                     const dx = e.x - x;
                     const dy = e.y - y;
@@ -122,7 +128,7 @@ function spawnEmojis() {
 
             const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
             const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
-            emojis.push(new Emoji(corner.type, x, y, EMOJI_SIZE, speedX, speedY));
+            emojis.push(new Emoji(type, x, y, EMOJI_SIZE, speedX, speedY));
         }
     });
 
