@@ -1,8 +1,15 @@
-// JavaScript (Game Logic + Neon Background)
+// script.js - Core Game Logic
+
 const canvas = document.getElementById('arena');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth * 0.8;
-canvas.height = window.innerHeight * 0.8;
+resizeCanvas();
+
+// Handle resizing to make the canvas adaptive
+window.addEventListener('resize', resizeCanvas);
+function resizeCanvas() {
+    canvas.width = window.innerWidth * 0.8;
+    canvas.height = window.innerHeight * 0.8;
+}
 
 // Define emoji properties
 const emojis = {
@@ -11,7 +18,7 @@ const emojis = {
     '✂️': { beats: '📄', color: 'red', glow: '#ff0033' },
 };
 
-// Create a moving gradient background
+// Create abstract animated background
 let gradientShift = 0;
 function drawBackground() {
     gradientShift += 1;
@@ -23,14 +30,29 @@ function drawBackground() {
     gradient.addColorStop(1, '#003333');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Add abstract shapes
+    for (let i = 0; i < 10; i++) {
+        ctx.strokeStyle = `rgba(0, 255, 255, 0.1)`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            Math.random() * 100,
+            0,
+            Math.PI * 2
+        );
+        ctx.stroke();
+    }
 }
 
-// Define entity class
+// Define Entity class
 class Entity {
-    constructor(x, y, type) {
+    constructor(x, y, type, size = Math.random() * 40 + 20) {
         this.x = x;
         this.y = y;
-        this.size = 40;
+        this.size = size;
         this.type = type;
         this.dx = (Math.random() - 0.5) * 6;
         this.dy = (Math.random() - 0.5) * 6;
@@ -47,7 +69,7 @@ class Entity {
 
         // Emoji
         ctx.shadowBlur = 0;
-        ctx.font = '20px Arial';
+        ctx.font = `${this.size / 2}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = 'white';
@@ -68,7 +90,7 @@ class Entity {
 
     collideWith(other) {
         const distance = Math.hypot(this.x - other.x, this.y - other.y);
-        return distance < this.size;
+        return distance < (this.size + other.size) / 2;
     }
 
     interact(other) {
@@ -84,6 +106,15 @@ const entities = [
     new Entity(400, 400, '📄'),
     new Entity(700, 700, '✂️'),
 ];
+
+// Add event listener for random-size emoji spawning
+canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const randomEmoji = Object.keys(emojis)[Math.floor(Math.random() * 3)];
+    entities.push(new Entity(x, y, randomEmoji));
+});
 
 // Update game state
 function update() {
