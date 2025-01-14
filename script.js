@@ -14,11 +14,12 @@ let animationFrame;
 
 // Constants
 const EMOJI_TYPES = ["🪨", "📄", "✂️"];
-const MAX_SPEED = 1.2; // Adjusted for better performance
-const MIN_SPEED = 0.6; // Slow but observable
-const EMOJI_SIZE = 15; // Standard emoji size
-const SPAWN_REGION_SIZE = 120; // Square size for corner spawn regions
-const ARENA_PADDING = EMOJI_SIZE * 2; // Ensures emojis don't spawn too close to walls
+const MAX_SPEED = 1; // Adjusted for smoother performance
+const MIN_SPEED = 0.5; // Observable movement speed
+const EMOJI_SIZE = 15; // Size of emojis
+const SPAWN_REGION_SIZE = 120; // Square size for grouped spawns
+const ARENA_PADDING = EMOJI_SIZE * 3; // Avoids wall collisions
+const MAX_EMOJIS = 50; // Performance cap
 
 // Utility Functions
 function random(min, max) {
@@ -94,18 +95,16 @@ function backToMenu() {
 
 function spawnEmojis() {
     resetGame();
-    const count = parseInt(emojiCountInput.value);
-    const perCornerCount = Math.ceil(count / 4);
+    const count = Math.min(parseInt(emojiCountInput.value), MAX_EMOJIS); // Limit for performance
+    const perCornerCount = Math.ceil(count / 3); // Split evenly among types
     const cornerRegions = [
-        { x: ARENA_PADDING, y: ARENA_PADDING }, // Top-left
-        { x: arena.offsetWidth - SPAWN_REGION_SIZE - ARENA_PADDING, y: ARENA_PADDING }, // Top-right
-        { x: ARENA_PADDING, y: arena.offsetHeight - SPAWN_REGION_SIZE - ARENA_PADDING }, // Bottom-left
-        { x: arena.offsetWidth - SPAWN_REGION_SIZE - ARENA_PADDING, y: arena.offsetHeight - SPAWN_REGION_SIZE - ARENA_PADDING } // Bottom-right
+        { type: "🪨", x: ARENA_PADDING, y: ARENA_PADDING }, // Top-left
+        { type: "📄", x: arena.offsetWidth - SPAWN_REGION_SIZE - ARENA_PADDING, y: ARENA_PADDING }, // Top-right
+        { type: "✂️", x: ARENA_PADDING, y: arena.offsetHeight - SPAWN_REGION_SIZE - ARENA_PADDING } // Bottom-left
     ];
 
     cornerRegions.forEach(corner => {
-        for (let i = 0; i < perCornerCount && emojis.length < count; i++) {
-            const type = EMOJI_TYPES[i % EMOJI_TYPES.length];
+        for (let i = 0; i < perCornerCount; i++) {
             let x, y;
             let validPosition = false;
 
@@ -123,7 +122,7 @@ function spawnEmojis() {
 
             const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
             const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
-            emojis.push(new Emoji(type, x, y, EMOJI_SIZE, speedX, speedY));
+            emojis.push(new Emoji(corner.type, x, y, EMOJI_SIZE, speedX, speedY));
         }
     });
 
