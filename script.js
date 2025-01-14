@@ -17,7 +17,7 @@ const EMOJI_TYPES = ["🪨", "📄", "✂️"];
 const MAX_EMOJIS = 50;
 const MIN_SPEED = 0.5; // Slower for better visibility
 const MAX_SPEED = 2;
-const SPAWN_PADDING = 10;
+const SPAWN_PADDING = 20;
 
 // Arena Bounds
 const ARENA_BOUNDS = {
