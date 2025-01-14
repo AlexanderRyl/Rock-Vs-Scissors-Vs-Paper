@@ -9,36 +9,39 @@
 </head>
 <body>
   <div id="title-screen">
-    <h1>Emoji Battle Arena</h1>
-    <p>Choose your map and settings to begin!</p>
-    <button id="start-btn">Start Game</button>
+    <div class="background"></div>
+    <div class="content">
+      <h1>Emoji Battle Arena</h1>
+      <p>Welcome to the chillest battle arena. Choose your settings to begin!</p>
+      <button id="start-btn">Start Game</button>
+    </div>
   </div>
 
   <canvas id="arena" style="display: none;"></canvas>
 
   <div id="controls" style="display: none;">
-    <h3>Customizations</h3>
-    <div class="control-group">
-      <label for="map-shape">Map Shape:</label>
-      <select id="map-shape">
-        <option value="circle">Circle</option>
-        <option value="square">Square</option>
-        <option value="hexagon">Hexagon</option>
-        <option value="octagon">Octagon</option>
-      </select>
+    <div class="background"></div>
+    <div class="content">
+      <h3>Customizations</h3>
+      <div class="control-group">
+        <label for="map-shape">Map Shape:</label>
+        <select id="map-shape">
+          <option value="circle">Circle</option>
+          <option value="square">Square</option>
+          <option value="hexagon">Hexagon</option>
+          <option value="octagon">Octagon</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="emoji-speed">Emoji Speed:</label>
+        <input type="range" id="emoji-speed" min="1" max="10" value="5">
+      </div>
+      <div class="control-group">
+        <label for="emoji-count">Number of Emojis:</label>
+        <input type="number" id="emoji-count" min="1" max="20" value="3">
+      </div>
+      <button id="spawn-random">Spawn Random Emoji</button>
     </div>
-
-    <div class="control-group">
-      <label for="emoji-speed">Emoji Speed:</label>
-      <input type="range" id="emoji-speed" min="1" max="10" value="5">
-    </div>
-
-    <div class="control-group">
-      <label for="emoji-count">Number of Emojis:</label>
-      <input type="number" id="emoji-count" min="1" max="20" value="3">
-    </div>
-
-    <button id="spawn-random">Spawn Random Emoji</button>
   </div>
 
   <script src="script.js"></script>
