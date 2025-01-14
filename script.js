@@ -14,12 +14,11 @@ let animationFrame;
 
 // Constants
 const EMOJI_TYPES = ["🪨", "📄", "✂️"];
-const MAX_EMOJIS = 50;
-const MIN_SPEED = 0.5; // Slower minimum speed
-const MAX_SPEED = 2;   // Slower maximum speed
+const MAX_SPEED = 1.5; // Slower max speed
+const MIN_SPEED = 0.5; // Slower min speed
 const CORNER_RADIUS = 100; // Spawn radius for corners
-const EMOJI_SIZE = 15; // Standard size of emojis
-const ARENA_PADDING = 20; // Padding to prevent emojis from spawning outside arena
+const EMOJI_SIZE = 15; // Size of emojis
+const ARENA_PADDING = 20; // Padding to keep emojis inside arena
 
 // Utility Functions
 function random(min, max) {
@@ -95,44 +94,38 @@ function backToMenu() {
 
 function spawnEmojis() {
     resetGame();
-    const count = Math.min(MAX_EMOJIS, parseInt(emojiCountInput.value));
+    const count = parseInt(emojiCountInput.value);
+    const perCornerCount = Math.ceil(count / 4); // Distribute evenly among 4 corners
     const cornerRegions = [
-        { x: ARENA_PADDING, y: ARENA_PADDING }, // Top-left corner
-        { x: arena.offsetWidth - CORNER_RADIUS - ARENA_PADDING, y: ARENA_PADDING }, // Top-right corner
-        { x: ARENA_PADDING, y: arena.offsetHeight - CORNER_RADIUS - ARENA_PADDING }, // Bottom-left corner
-        { x: arena.offsetWidth - CORNER_RADIUS - ARENA_PADDING, y: arena.offsetHeight - CORNER_RADIUS - ARENA_PADDING } // Bottom-right corner
+        { x: ARENA_PADDING, y: ARENA_PADDING }, // Top-left
+        { x: arena.offsetWidth - CORNER_RADIUS - ARENA_PADDING, y: ARENA_PADDING }, // Top-right
+        { x: ARENA_PADDING, y: arena.offsetHeight - CORNER_RADIUS - ARENA_PADDING }, // Bottom-left
+        { x: arena.offsetWidth - CORNER_RADIUS - ARENA_PADDING, y: arena.offsetHeight - CORNER_RADIUS - ARENA_PADDING } // Bottom-right
     ];
 
-    for (let i = 0; i < count; i++) {
-        const type = EMOJI_TYPES[i % 3];
-        let validPosition = false;
-        let x, y;
+    cornerRegions.forEach((corner, cornerIndex) => {
+        for (let i = 0; i < perCornerCount && emojis.length < count; i++) {
+            const type = EMOJI_TYPES[i % 3];
+            let x, y;
+            let validPosition = false;
 
-        while (!validPosition) {
-            const corner = cornerRegions[Math.floor(i / (count / 4))]; // Distribute emojis among corners
-            x = random(corner.x, corner.x + CORNER_RADIUS);
-            y = random(corner.y, corner.y + CORNER_RADIUS);
+            while (!validPosition) {
+                x = random(corner.x, corner.x + CORNER_RADIUS);
+                y = random(corner.y, corner.y + CORNER_RADIUS);
 
-            // Ensure emoji is within arena boundaries
-            if (
-                x < ARENA_PADDING || x > arena.offsetWidth - EMOJI_SIZE * 2 - ARENA_PADDING ||
-                y < ARENA_PADDING || y > arena.offsetHeight - EMOJI_SIZE * 2 - ARENA_PADDING
-            ) {
-                continue;
+                // Ensure valid position with no overlap
+                validPosition = emojis.every(e => {
+                    const dx = e.x - x;
+                    const dy = e.y - y;
+                    return Math.sqrt(dx * dx + dy * dy) > EMOJI_SIZE * 2; // Keep separation
+                });
             }
 
-            // Check for overlap with existing emojis
-            validPosition = emojis.every(e => {
-                const dx = e.x - x;
-                const dy = e.y - y;
-                return Math.sqrt(dx * dx + dy * dy) > EMOJI_SIZE * 2; // Ensure separation
-            });
+            const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
+            const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
+            emojis.push(new Emoji(type, x, y, EMOJI_SIZE, speedX, speedY));
         }
-
-        const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
-        const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
-        emojis.push(new Emoji(type, x, y, EMOJI_SIZE, speedX, speedY));
-    }
+    });
 
     animate();
 }
