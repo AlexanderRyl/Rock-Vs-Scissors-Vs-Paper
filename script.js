@@ -14,11 +14,11 @@ let animationFrame;
 
 // Constants
 const EMOJI_TYPES = ["🪨", "📄", "✂️"];
-const MAX_SPEED = 1.5; // Slower max speed
-const MIN_SPEED = 0.5; // Slower min speed
-const CORNER_RADIUS = 100; // Spawn radius for corners
-const EMOJI_SIZE = 15; // Size of emojis
-const ARENA_PADDING = 20; // Padding to keep emojis inside arena
+const MAX_SPEED = 1.2; // Adjusted for better performance
+const MIN_SPEED = 0.6; // Slow but observable
+const EMOJI_SIZE = 15; // Standard emoji size
+const SPAWN_REGION_SIZE = 120; // Square size for corner spawn regions
+const ARENA_PADDING = EMOJI_SIZE * 2; // Ensures emojis don't spawn too close to walls
 
 // Utility Functions
 function random(min, max) {
@@ -68,7 +68,7 @@ class Emoji {
         this.x += this.speedX;
         this.y += this.speedY;
 
-        // Bounce on walls
+        // Bounce off walls
         if (this.x <= ARENA_PADDING || this.x >= arena.offsetWidth - this.size * 2 - ARENA_PADDING) {
             this.speedX *= -1;
         }
@@ -95,29 +95,29 @@ function backToMenu() {
 function spawnEmojis() {
     resetGame();
     const count = parseInt(emojiCountInput.value);
-    const perCornerCount = Math.ceil(count / 4); // Distribute evenly among 4 corners
+    const perCornerCount = Math.ceil(count / 4);
     const cornerRegions = [
         { x: ARENA_PADDING, y: ARENA_PADDING }, // Top-left
-        { x: arena.offsetWidth - CORNER_RADIUS - ARENA_PADDING, y: ARENA_PADDING }, // Top-right
-        { x: ARENA_PADDING, y: arena.offsetHeight - CORNER_RADIUS - ARENA_PADDING }, // Bottom-left
-        { x: arena.offsetWidth - CORNER_RADIUS - ARENA_PADDING, y: arena.offsetHeight - CORNER_RADIUS - ARENA_PADDING } // Bottom-right
+        { x: arena.offsetWidth - SPAWN_REGION_SIZE - ARENA_PADDING, y: ARENA_PADDING }, // Top-right
+        { x: ARENA_PADDING, y: arena.offsetHeight - SPAWN_REGION_SIZE - ARENA_PADDING }, // Bottom-left
+        { x: arena.offsetWidth - SPAWN_REGION_SIZE - ARENA_PADDING, y: arena.offsetHeight - SPAWN_REGION_SIZE - ARENA_PADDING } // Bottom-right
     ];
 
-    cornerRegions.forEach((corner, cornerIndex) => {
+    cornerRegions.forEach(corner => {
         for (let i = 0; i < perCornerCount && emojis.length < count; i++) {
-            const type = EMOJI_TYPES[i % 3];
+            const type = EMOJI_TYPES[i % EMOJI_TYPES.length];
             let x, y;
             let validPosition = false;
 
             while (!validPosition) {
-                x = random(corner.x, corner.x + CORNER_RADIUS);
-                y = random(corner.y, corner.y + CORNER_RADIUS);
+                x = random(corner.x, corner.x + SPAWN_REGION_SIZE - EMOJI_SIZE);
+                y = random(corner.y, corner.y + SPAWN_REGION_SIZE - EMOJI_SIZE);
 
-                // Ensure valid position with no overlap
+                // Ensure no overlap
                 validPosition = emojis.every(e => {
                     const dx = e.x - x;
                     const dy = e.y - y;
-                    return Math.sqrt(dx * dx + dy * dy) > EMOJI_SIZE * 2; // Keep separation
+                    return Math.sqrt(dx * dx + dy * dy) > EMOJI_SIZE * 2;
                 });
             }
 
