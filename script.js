@@ -14,10 +14,10 @@ let animationFrame;
 
 // Constants
 const EMOJI_TYPES = ["🪨", "📄", "✂️"];
-const ARENA_BOUNDS = { width: arena.offsetWidth, height: arena.offsetHeight };
 const MAX_EMOJIS = 50;
 const MIN_SPEED = 1;
 const MAX_SPEED = 5;
+const CORNER_RADIUS = 100; // Spawn radius for corners
 
 // Utility Functions
 function random(min, max) {
@@ -68,10 +68,10 @@ class Emoji {
         this.y += this.speedY;
 
         // Bounce on walls
-        if (this.x <= 0 || this.x >= ARENA_BOUNDS.width - this.size * 2) {
+        if (this.x <= 0 || this.x >= arena.offsetWidth - this.size * 2) {
             this.speedX *= -1;
         }
-        if (this.y <= 0 || this.y >= ARENA_BOUNDS.height - this.size * 2) {
+        if (this.y <= 0 || this.y >= arena.offsetHeight - this.size * 2) {
             this.speedY *= -1;
         }
 
@@ -95,29 +95,35 @@ function spawnEmojis() {
     resetGame();
     const count = Math.min(MAX_EMOJIS, parseInt(emojiCountInput.value));
     const cornerRegions = [
-        { x: 0, y: 0 }, // Top-left corner
-        { x: ARENA_BOUNDS.width * 0.75, y: 0 }, // Top-right corner
-        { x: 0, y: ARENA_BOUNDS.height * 0.75 }, // Bottom-left corner
-        { x: ARENA_BOUNDS.width * 0.75, y: ARENA_BOUNDS.height * 0.75 } // Bottom-right corner
+        { x: CORNER_RADIUS, y: CORNER_RADIUS }, // Top-left corner
+        { x: arena.offsetWidth - CORNER_RADIUS * 2, y: CORNER_RADIUS }, // Top-right corner
+        { x: CORNER_RADIUS, y: arena.offsetHeight - CORNER_RADIUS * 2 }, // Bottom-left corner
+        { x: arena.offsetWidth - CORNER_RADIUS * 2, y: arena.offsetHeight - CORNER_RADIUS * 2 } // Bottom-right corner
     ];
-    const radius = 50; // Minimum radius of separation
 
-    for (let i = 0; i < count * 3; i++) {
+    for (let i = 0; i < count; i++) {
         const type = EMOJI_TYPES[i % 3];
         let validPosition = false;
         let x, y;
 
-        // Try to spawn emoji in a valid position
         while (!validPosition) {
             const corner = cornerRegions[Math.floor(Math.random() * cornerRegions.length)];
-            x = random(corner.x, corner.x + radius);
-            y = random(corner.y, corner.y + radius);
+            x = random(corner.x - CORNER_RADIUS, corner.x + CORNER_RADIUS);
+            y = random(corner.y - CORNER_RADIUS, corner.y + CORNER_RADIUS);
 
-            // Check if the position is far enough from all existing emojis
+            // Ensure emoji is within arena boundaries
+            if (
+                x < 0 || x > arena.offsetWidth - 30 || // Check horizontal boundaries
+                y < 0 || y > arena.offsetHeight - 30  // Check vertical boundaries
+            ) {
+                continue;
+            }
+
+            // Check for overlap with existing emojis
             validPosition = emojis.every(e => {
                 const dx = e.x - x;
                 const dy = e.y - y;
-                return Math.sqrt(dx * dx + dy * dy) > radius;
+                return Math.sqrt(dx * dx + dy * dy) > 30; // Ensure separation
             });
         }
 
