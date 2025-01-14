@@ -1,83 +1,143 @@
-// JavaScript (script.js)
-const menu = document.getElementById('menu');
-const arena = document.getElementById('arena');
-const controls = document.getElementById('controls');
-const startBtn = document.getElementById('start-btn');
-const spawnBtn = document.getElementById('spawn-btn');
-const respawnBtn = document.getElementById('respawn-btn');
-const emojiCountInput = document.getElementById('emoji-count');
-const emojiSpeedInput = document.getElementById('emoji-speed');
-const ctx = arena.getContext('2d');
-const entities = [];
-const emojis = ['🌟', '🌈', '🔥', '⚡', '💎', '🎉'];
+// DOM Elements
+const mainMenu = document.getElementById("main-menu");
+const gameScreen = document.getElementById("game-screen");
+const startButton = document.getElementById("start-button");
+const backButton = document.getElementById("back-button");
+const emojiCountInput = document.getElementById("emoji-count");
+const spawnButton = document.getElementById("spawn-button");
+const arena = document.getElementById("arena");
+const winnerAnnouncement = document.getElementById("winner-announcement");
 
-let gameInterval = null;
+// Game Variables
+let emojis = [];
+let animationFrame;
 
-function createParticles(canvas) {
-  // Create swirling particles for the background (neon effect)
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+// Constants
+const EMOJI_TYPES = ["🪨", "📄", "✂️"];
+const ARENA_BOUNDS = { width: arena.offsetWidth, height: arena.offsetHeight };
+const MAX_EMOJIS = 50;
+const MIN_SPEED = 1;
+const MAX_SPEED = 5;
 
-  const particles = Array.from({ length: 100 }, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    size: Math.random() * 3 + 1,
-    dx: Math.random() * 2 - 1,
-    dy: Math.random() * 2 - 1,
-    color: `rgba(0, 255, 204, ${Math.random()})`
-  }));
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.fill();
-
-      p.x += p.dx;
-      p.y += p.dy;
-
-      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-    });
-
-    requestAnimationFrame(draw);
-  }
-
-  draw();
+// Utility Functions
+function random(min, max) {
+    return Math.random() * (max - min) + min;
 }
 
+function checkCollision(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < a.size + b.size;
+}
+
+function resolveCollision(emojiA, emojiB) {
+    if (emojiA.type === "🪨" && emojiB.type === "✂️") {
+        emojiB.type = "🪨";
+    } else if (emojiA.type === "✂️" && emojiB.type === "📄") {
+        emojiB.type = "✂️";
+    } else if (emojiA.type === "📄" && emojiB.type === "🪨") {
+        emojiB.type = "📄";
+    }
+}
+
+// Emoji Class
+class Emoji {
+    constructor(type, x, y, size, speedX, speedY) {
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.speedX = speedX;
+        this.speedY = speedY;
+        this.element = document.createElement("div");
+        this.element.className = "emoji";
+        this.element.textContent = this.type;
+        this.updatePosition();
+        arena.appendChild(this.element);
+    }
+
+    updatePosition() {
+        this.element.style.left = `${this.x}px`;
+        this.element.style.top = `${this.y}px`;
+        this.element.style.fontSize = `${this.size * 2}px`;
+    }
+
+    move() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Bounce on walls
+        if (this.x <= 0 || this.x >= ARENA_BOUNDS.width - this.size * 2) {
+            this.speedX *= -1;
+        }
+        if (this.y <= 0 || this.y >= ARENA_BOUNDS.height - this.size * 2) {
+            this.speedY *= -1;
+        }
+
+        this.updatePosition();
+    }
+}
+
+// Game Functions
 function startGame() {
-  menu.style.display = 'none';
-  controls.style.display = 'flex';
-  arena.style.display = 'block';
-
-  createParticles(arena);
-  spawnEntities(parseInt(emojiCountInput.value));
+    mainMenu.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
 }
 
-function spawnEntities(count) {
-  entities.length = 0;
-  for (let i = 0; i < count; i++) {
-    entities.push({
-      x: Math.random() * arena.width,
-      y: Math.random() * arena.height,
-      emoji: emojis[i % emojis.length]
+function backToMenu() {
+    gameScreen.classList.add("hidden");
+    mainMenu.classList.remove("hidden");
+    resetGame();
+}
+
+function spawnEmojis() {
+    resetGame();
+    const count = Math.min(MAX_EMOJIS, parseInt(emojiCountInput.value));
+    for (let i = 0; i < count * 3; i++) {
+        const type = EMOJI_TYPES[i % 3];
+        const x = random(0, ARENA_BOUNDS.width - 30);
+        const y = random(0, ARENA_BOUNDS.height - 30);
+        const size = 15;
+        const speedX = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
+        const speedY = random(MIN_SPEED, MAX_SPEED) * (Math.random() > 0.5 ? 1 : -1);
+        emojis.push(new Emoji(type, x, y, size, speedX, speedY));
+    }
+    animate();
+}
+
+function resetGame() {
+    cancelAnimationFrame(animationFrame);
+    emojis.forEach(emoji => emoji.element.remove());
+    emojis = [];
+    winnerAnnouncement.classList.add("hidden");
+}
+
+function checkForWinner() {
+    const types = new Set(emojis.map(e => e.type));
+    if (types.size === 1) {
+        winnerAnnouncement.textContent = `${Array.from(types)[0]} Wins!`;
+        winnerAnnouncement.classList.remove("hidden");
+        cancelAnimationFrame(animationFrame);
+    }
+}
+
+function animate() {
+    emojis.forEach(emoji => {
+        emoji.move();
+        emojis.forEach(other => {
+            if (emoji !== other && checkCollision(emoji, other)) {
+                resolveCollision(emoji, other);
+                other.element.textContent = other.type;
+            }
+        });
     });
-  }
-  drawEntities();
+
+    checkForWinner();
+    animationFrame = requestAnimationFrame(animate);
 }
 
-function drawEntities() {
-  ctx.clearRect(0, 0, arena.width, arena.height);
-  entities.forEach(({ x, y, emoji }) => {
-    ctx.font = '40px Arial';
-    ctx.fillText(emoji, x, y);
-  });
-}
-
-startBtn.addEventListener('click', startGame);
-spawnBtn.addEventListener('click', () => spawnEntities(1));
-respawnBtn.addEventListener('click', () => spawnEntities(emojiCountInput.value));
+// Event Listeners
+startButton.addEventListener("click", startGame);
+backButton.addEventListener("click", backToMenu);
+spawnButton.addEventListener("click", spawnEmojis);
