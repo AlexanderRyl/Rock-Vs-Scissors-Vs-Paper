@@ -1,29 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rock Paper Scissors Arena</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Battle Arena</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Main Menu -->
-    <div id="main-menu" class="menu">
-        <h1>Rock Paper Scissors Arena</h1>
-        <button id="start-button" class="btn">Start Game</button>
-    </div>
+  <div id="title-screen">
+    <h1>Rock 🪨 vs. Paper 📄 vs. Scissors ✂️</h1>
+    <p>Three emojis enter, but only one can win!</p>
+    <button id="start-btn">Start Game</button>
+  </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="hidden">
-        <div class="controls">
-            <input id="emoji-count" type="number" min="1" max="50" placeholder="Emoji count (1-50)">
-            <button id="spawn-button" class="btn">Spawn Emojis</button>
-            <button id="back-button" class="btn back-btn">Back to Menu</button>
-        </div>
-        <div id="arena" class="arena"></div>
-        <div id="winner-announcement" class="announcement hidden"></div>
-    </div>
+  <canvas id="arena" style="display: none;"></canvas>
 
-    <script src="script.js"></script>
+  <div id="controls">
+    <h3>Customizations</h3>
+    <label for="map-shape">Map Shape:</label>
+    <select id="map-shape">
+      <option value="circle">Circle</option>
+      <option value="triangle">Triangle</option>
+      <option value="hexagon">Hexagon</option>
+      <option value="octagon">Octagon</option>
+    </select>
+
+    <label for="emoji-speed">Speed:</label>
+    <input type="range" id="emoji-speed" min="1" max="10" value="5">
+
+    <label for="emoji-count">Number of Emojis:</label>
+    <input type="number" id="emoji-count" min="1" max="20" value="3">
+
+    <button id="spawn-random">Spawn Random-Size Emoji</button>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
